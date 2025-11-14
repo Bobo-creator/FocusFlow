@@ -1,0 +1,350 @@
+'use client'
+
+import { useState } from 'react'
+import { createClientSupabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/Button'
+import { Upload, FileText, Loader, CheckCircle, AlertCircle } from 'lucide-react'
+import * as pdlParser from 'pdf-parse'
+import mammoth from 'mammoth'
+
+interface LessonPlanUploadProps {
+  userId?: string
+}
+
+export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
+  const [title, setTitle] = useState('')
+  const [subject, setSubject] = useState('')
+  const [gradeLevel, setGradeLevel] = useState('')
+  const [content, setContent] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const [uploadStep, setUploadStep] = useState<'form' | 'processing' | 'success'>('form')
+  const [message, setMessage] = useState('')
+
+  const supabase = createClientSupabase()
+
+  const subjects = [
+    'Mathematics', 'English Language Arts', 'Science', 'Social Studies',
+    'Art', 'Music', 'Physical Education', 'Foreign Language', 'Other'
+  ]
+
+  const gradeLevels = [
+    'Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade',
+    '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade',
+    '9th Grade', '10th Grade', '11th Grade', '12th Grade'
+  ]
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (!selectedFile) return
+
+    setFile(selectedFile)
+    setProcessing(true)
+    setMessage('Processing file...')
+
+    try {
+      let extractedText = ''
+
+      if (selectedFile.type === 'application/pdf') {
+        const arrayBuffer = await selectedFile.arrayBuffer()
+        const pdfData = await pdlParser(Buffer.from(arrayBuffer))
+        extractedText = pdfData.text
+      } else if (selectedFile.type.includes('word') || selectedFile.name.endsWith('.docx')) {
+        const arrayBuffer = await selectedFile.arrayBuffer()
+        const result = await mammoth.extractRawText({ arrayBuffer })
+        extractedText = result.value
+      } else if (selectedFile.type === 'text/plain') {
+        extractedText = await selectedFile.text()
+      } else {
+        throw new Error('Unsupported file type. Please upload PDF, DOCX, or TXT files.')
+      }
+
+      setContent(extractedText)
+      setMessage('File processed successfully!')
+      
+      // Auto-extract title if not provided
+      if (!title && extractedText) {
+        const lines = extractedText.split('\n').filter(line => line.trim())
+        if (lines.length > 0) {
+          setTitle(lines[0].substring(0, 100)) // First non-empty line as title
+        }
+      }
+    } catch (error: any) {
+      setMessage(`Error processing file: ${error.message}`)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!userId) return
+
+    setUploading(true)
+    setUploadStep('processing')
+    setMessage('Uploading lesson plan...')
+
+    try {
+      let fileUrl = null
+      
+      // Upload file to Supabase Storage if a file was selected
+      if (file) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${userId}/${Date.now()}.${fileExt}`
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('lesson-plans')
+          .upload(fileName, file)
+        
+        if (uploadError) throw uploadError
+        
+        const { data: { publicUrl } } = supabase.storage
+          .from('lesson-plans')
+          .getPublicUrl(fileName)
+        
+        fileUrl = publicUrl
+      }
+
+      // Save lesson plan to database
+      const { data, error } = await supabase
+        .from('lesson_plans')
+        .insert({
+          teacher_id: userId,
+          title,
+          subject,
+          grade_level: gradeLevel,
+          original_content: content,
+          file_url: fileUrl,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Generate ADHD-friendly adaptations
+      setMessage('Generating ADHD-friendly adaptations...')
+      
+      const response = await fetch('/api/adapt-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lessonPlanId: data.id,
+          content,
+          subject,
+          gradeLevel,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate adaptations')
+      }
+
+      setUploadStep('success')
+      setMessage('Lesson plan uploaded and adapted successfully!')
+      
+      // Reset form
+      setTimeout(() => {
+        setTitle('')
+        setSubject('')
+        setGradeLevel('')
+        setContent('')
+        setFile(null)
+        setUploadStep('form')
+        setMessage('')
+      }, 3000)
+
+    } catch (error: any) {
+      setMessage(`Error: ${error.message}`)
+      setUploadStep('form')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  if (uploadStep === 'processing') {
+    return (
+      <div className="text-center py-12">
+        <Loader className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Processing Your Lesson Plan</h3>
+        <p className="text-gray-500 mb-4">{message}</p>
+        <div className="max-w-md mx-auto">
+          <div className="bg-gray-200 rounded-full h-2 mb-4">
+            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '75%' }}></div>
+          </div>
+          <p className="text-sm text-gray-600">
+            Our AI is analyzing your lesson and generating ADHD-friendly adaptations...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (uploadStep === 'success') {
+    return (
+      <div className="text-center py-12">
+        <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Success!</h3>
+        <p className="text-gray-500 mb-4">{message}</p>
+        <p className="text-sm text-gray-600">
+          Check the "My Lesson Plans" tab to view your ADHD adaptations and coaching tips.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Lesson Plan</h2>
+        <p className="text-gray-600">
+          Upload your lesson plan and get AI-powered ADHD-friendly adaptations, coaching tips, and visual aids.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* File Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Upload File (PDF, DOCX, or TXT)
+          </label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+            <input
+              type="file"
+              accept=".pdf,.docx,.doc,.txt"
+              onChange={handleFileChange}
+              className="hidden"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" className="cursor-pointer">
+              {file ? (
+                <div className="flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-blue-600 mr-2" />
+                  <span className="text-sm text-gray-900">{file.name}</span>
+                </div>
+              ) : (
+                <div>
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Click to upload or drag and drop your lesson plan
+                  </p>
+                </div>
+              )}
+            </label>
+          </div>
+          {processing && (
+            <div className="mt-2 flex items-center text-sm text-blue-600">
+              <Loader className="w-4 h-4 mr-2 animate-spin" />
+              Processing file...
+            </div>
+          )}
+        </div>
+
+        {/* Manual Text Input */}
+        <div>
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+            Or paste your lesson plan text
+          </label>
+          <textarea
+            id="content"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={8}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Paste your lesson plan content here..."
+          />
+        </div>
+
+        {/* Lesson Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+              Subject *
+            </label>
+            <select
+              id="subject"
+              required
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select a subject</option>
+              {subjects.map((subj) => (
+                <option key={subj} value={subj}>{subj}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="gradeLevel" className="block text-sm font-medium text-gray-700 mb-2">
+              Grade Level *
+            </label>
+            <select
+              id="gradeLevel"
+              required
+              value={gradeLevel}
+              onChange={(e) => setGradeLevel(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Select grade level</option>
+              {gradeLevels.map((grade) => (
+                <option key={grade} value={grade}>{grade}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+            Lesson Title *
+          </label>
+          <input
+            type="text"
+            id="title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter lesson title"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={uploading || processing || !content.trim() || !title.trim() || !subject || !gradeLevel}
+          className="w-full"
+          size="lg"
+        >
+          {uploading ? (
+            <>
+              <Loader className="w-4 h-4 mr-2 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4 mr-2" />
+              Upload & Generate ADHD Adaptations
+            </>
+          )}
+        </Button>
+      </form>
+
+      {message && (
+        <div className={`mt-4 p-4 rounded-md ${
+          message.includes('Error') || message.includes('error')
+            ? 'bg-red-50 text-red-700 border border-red-200'
+            : 'bg-green-50 text-green-700 border border-green-200'
+        }`}>
+          <div className="flex items-center">
+            {message.includes('Error') || message.includes('error') ? (
+              <AlertCircle className="w-5 h-5 mr-2" />
+            ) : (
+              <CheckCircle className="w-5 h-5 mr-2" />
+            )}
+            {message}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
