@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
-import { Upload, FileText, Loader, CheckCircle, AlertCircle } from 'lucide-react'
+import { Upload, FileText, Loader, CheckCircle, AlertCircle, X, Plus, Sparkles, Brain, Clock } from 'lucide-react'
 import * as pdlParser from 'pdf-parse'
 import mammoth from 'mammoth'
 
@@ -164,17 +164,49 @@ export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
 
   if (uploadStep === 'processing') {
     return (
-      <div className="text-center py-12">
-        <Loader className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Processing Your Lesson Plan</h3>
-        <p className="text-gray-500 mb-4">{message}</p>
+      <div className="text-center py-16">
         <div className="max-w-md mx-auto">
-          <div className="bg-gray-200 rounded-full h-2 mb-4">
-            <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '75%' }}></div>
+          <div className="relative mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Brain className="w-10 h-10 text-white animate-pulse" />
+            </div>
+            <div className="absolute -top-2 -right-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white animate-spin" />
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
-            Our AI is analyzing your lesson and generating ADHD-friendly adaptations...
-          </p>
+          
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">AI is Working Its Magic</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          
+          <div className="bg-white rounded-2xl p-6 border border-indigo-100 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-700">Processing Steps</span>
+              <span className="text-sm text-indigo-600">Step 2 of 3</span>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="text-sm text-gray-900">Analyzing lesson content</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Loader className="w-5 h-5 text-indigo-500 animate-spin" />
+                <span className="text-sm text-gray-900">Generating ADHD adaptations</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Clock className="w-5 h-5 text-gray-300" />
+                <span className="text-sm text-gray-500">Creating coaching tips</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-200">
+            <p className="text-sm text-indigo-700 font-medium mb-1">Did you know?</p>
+            <p className="text-sm text-indigo-600">
+              Our AI considers 12+ ADHD-specific factors when adapting your lesson plan.
+            </p>
+          </div>
         </div>
       </div>
     )
