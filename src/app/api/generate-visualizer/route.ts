@@ -16,10 +16,49 @@ export async function POST(request: NextRequest) {
     const supabase = supabaseAdmin
 
     // Generate visualizer image
-    const imageUrl = await generateVisualizer(concept, gradeLevel)
+    const openAiImageUrl = await generateVisualizer(concept, gradeLevel)
 
-    if (!imageUrl) {
+    if (!openAiImageUrl) {
       throw new Error('Failed to generate visualizer image')
+    }
+
+    // Download the image from OpenAI and upload to Supabase Storage
+    let permanentImageUrl = openAiImageUrl
+    
+    try {
+      // Fetch the image from OpenAI
+      const imageResponse = await fetch(openAiImageUrl)
+      if (!imageResponse.ok) {
+        throw new Error('Failed to fetch generated image')
+      }
+      
+      const imageBuffer = await imageResponse.arrayBuffer()
+      const imageFile = new Uint8Array(imageBuffer)
+      
+      // Generate a unique filename
+      const fileName = `${concept.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}.png`
+      const filePath = `${lessonPlanId}/${fileName}`
+      
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('visualizers')
+        .upload(filePath, imageFile, {
+          contentType: 'image/png',
+          upsert: false
+        })
+      
+      if (uploadError) {
+        console.warn('Failed to upload to storage, using original URL:', uploadError)
+      } else {
+        // Get the public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('visualizers')
+          .getPublicUrl(filePath)
+        
+        permanentImageUrl = publicUrl
+      }
+    } catch (storageError) {
+      console.warn('Storage operation failed, using original OpenAI URL:', storageError)
     }
 
     // Save visualizer to database
@@ -28,7 +67,8 @@ export async function POST(request: NextRequest) {
       .insert({
         lesson_plan_id: lessonPlanId,
         concept,
-        image_url: imageUrl,
+        image_url: permanentImageUrl,
+        grade_level: gradeLevel,
         description: description || `Visual representation of ${concept} for ${gradeLevel} students`,
       })
       .select()

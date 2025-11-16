@@ -17,6 +17,7 @@ interface Visualizer {
     title: string
     subject: string
   } | null
+  signedUrl?: string
 }
 
 interface VisualAidsTabProps {
@@ -59,7 +60,47 @@ export default function VisualAidsTab({ userId }: VisualAidsTabProps) {
 
       if (error) throw error
 
-      setVisualizers(data || [])
+      // Generate signed URLs for the images
+      const visualizersWithSignedUrls = await Promise.all(
+        (data || []).map(async (visualizer) => {
+          try {
+            // Extract the file path from the full URL
+            let filePath = visualizer.image_url
+            
+            // If it's already a full URL, extract just the path
+            if (filePath.includes('supabase')) {
+              const urlParts = filePath.split('/storage/v1/object/public/visualizers/')
+              if (urlParts.length > 1) {
+                filePath = urlParts[1]
+              } else {
+                // Try another pattern
+                const pathMatch = filePath.match(/visualizers\/(.+)$/)
+                if (pathMatch) {
+                  filePath = pathMatch[1]
+                }
+              }
+            }
+            
+            // Generate signed URL
+            const { data: signedUrlData } = await supabase.storage
+              .from('visualizers')
+              .createSignedUrl(filePath, 3600) // 1 hour expiry
+            
+            return {
+              ...visualizer,
+              signedUrl: signedUrlData?.signedUrl || visualizer.image_url
+            }
+          } catch (urlError) {
+            console.warn('Could not generate signed URL for', visualizer.image_url, urlError)
+            return {
+              ...visualizer,
+              signedUrl: visualizer.image_url // Fallback to original URL
+            }
+          }
+        })
+      )
+
+      setVisualizers(visualizersWithSignedUrls)
     } catch (error: any) {
       console.error('Error fetching visualizers:', error)
     } finally {
@@ -211,10 +252,11 @@ export default function VisualAidsTab({ userId }: VisualAidsTabProps) {
                 {/* Image */}
                 <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 relative overflow-hidden">
                   <img 
-                    src={visualizer.image_url} 
+                    src={visualizer.signedUrl || visualizer.image_url} 
                     alt={visualizer.description}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
+                      console.error('Image failed to load:', visualizer.signedUrl || visualizer.image_url)
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
                     }}
                   />
@@ -224,7 +266,7 @@ export default function VisualAidsTab({ userId }: VisualAidsTabProps) {
                     <div className="flex space-x-2">
                       <button 
                         className="p-2 bg-white/90 text-gray-700 rounded-lg hover:bg-white transition-colors"
-                        onClick={() => window.open(visualizer.image_url, '_blank')}
+                        onClick={() => window.open(visualizer.signedUrl || visualizer.image_url, '_blank')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -232,7 +274,7 @@ export default function VisualAidsTab({ userId }: VisualAidsTabProps) {
                         className="p-2 bg-white/90 text-gray-700 rounded-lg hover:bg-white transition-colors"
                         onClick={() => {
                           const link = document.createElement('a')
-                          link.href = visualizer.image_url
+                          link.href = visualizer.signedUrl || visualizer.image_url
                           link.download = `${visualizer.concept}-visual-aid.jpg`
                           link.click()
                         }}
