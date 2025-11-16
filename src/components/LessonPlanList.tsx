@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import BreakReminderSystem from '@/components/BreakReminderSystem'
-import { BookOpen, Brain, Clock, Eye, Trash2, Image } from 'lucide-react'
+import { BookOpen, Brain, Clock, Eye, Trash2, Image, Play, Layers, Palette, RefreshCw, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
 
 interface LessonPlan {
   id: string
@@ -32,6 +32,7 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
   const [lessonPlans, setLessonPlans] = useState<LessonPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<LessonPlan | null>(null)
+  const [activeDetailTab, setActiveDetailTab] = useState<'overview' | 'original' | 'adapted' | 'visual-aids' | 'coaching'>('overview')
   const [showCoaching, setShowCoaching] = useState(false)
   const [generatingVisual, setGeneratingVisual] = useState(false)
   const [visualizers, setVisualizers] = useState<Visualizer[]>([])
@@ -203,65 +204,105 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Lesson Plans List */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Your Lesson Plans</h3>
-        <div className="space-y-3">
-          {lessonPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                selectedPlan?.id === plan.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => setSelectedPlan(plan)}
+    <div className="flex h-full bg-gray-50">
+      {/* Lesson Plans Sidebar */}
+      <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+        {/* Sidebar Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">My Lessons</h2>
+            <Button 
+              size="sm" 
+              variant="secondary"
+              onClick={() => {
+                // Refresh lesson plans
+                setLoading(true)
+                fetchLessonPlans()
+              }}
             >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 mb-1">{plan.title}</h4>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span>{plan.subject}</span>
-                    <span>•</span>
-                    <span>{plan.grade_level}</span>
-                    <span>•</span>
-                    <span>{new Date(plan.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="mt-2 flex items-center space-x-2">
-                    {plan.adhd_adapted_content && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <Brain className="w-3 h-3 mr-1" />
-                        ADHD Adapted
-                      </span>
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+          <p className="text-sm text-gray-600">
+            {lessonPlans.length} lesson{lessonPlans.length !== 1 ? 's' : ''} with ADHD adaptations
+          </p>
+        </div>
+        
+        {/* Lessons List */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-3">
+            {lessonPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className={`group relative p-4 rounded-2xl cursor-pointer transition-all duration-200 ${
+                  selectedPlan?.id === plan.id
+                    ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 shadow-md'
+                    : 'bg-white border border-gray-200 hover:border-indigo-300 hover:shadow-lg'
+                }`}
+                onClick={() => {
+                  setSelectedPlan(plan)
+                  setActiveDetailTab('overview')
+                }}
+              >
+                {/* Lesson Card Content */}
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-gray-900 truncate mb-1">
+                        {plan.title}
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700">
+                          {plan.subject}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700">
+                          {plan.grade_level}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {selectedPlan?.id === plan.id && (
+                      <div className="w-3 h-3 bg-indigo-600 rounded-full animate-pulse"></div>
                     )}
                   </div>
-                </div>
-                <div className="flex items-center space-x-2 ml-4">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedPlan(plan)
-                    }}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      deleteLessonPlan(plan.id)
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  
+                  {/* Status Indicators */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {plan.adhd_adapted_content ? (
+                        <div className="flex items-center space-x-1 text-xs text-green-700">
+                          <CheckCircle className="w-3 h-3" />
+                          <span>ADHD Ready</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-1 text-xs text-orange-600">
+                          <Clock className="w-3 h-3" />
+                          <span>Processing...</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteLessonPlan(plan.id)
+                        }}
+                        className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Date */}
+                  <div className="text-xs text-gray-500">
+                    Created {new Date(plan.created_at).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
