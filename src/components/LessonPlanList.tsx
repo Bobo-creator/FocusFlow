@@ -22,7 +22,6 @@ interface Visualizer {
   image_url: string
   description: string
   created_at: string
-  signedUrl?: string
 }
 
 interface LessonPlanListProps {
@@ -81,47 +80,7 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      
-      // Generate signed URLs for the images
-      const visualizersWithSignedUrls = await Promise.all(
-        (data || []).map(async (visualizer) => {
-          try {
-            // Extract the file path from the full URL
-            let filePath = visualizer.image_url
-            
-            // If it's already a full URL, extract just the path
-            if (filePath.includes('supabase')) {
-              const urlParts = filePath.split('/storage/v1/object/public/visualizers/')
-              if (urlParts.length > 1) {
-                filePath = urlParts[1]
-              } else {
-                const pathMatch = filePath.match(/visualizers\/(.+)$/)
-                if (pathMatch) {
-                  filePath = pathMatch[1]
-                }
-              }
-            }
-            
-            // Generate signed URL
-            const { data: signedUrlData } = await supabase.storage
-              .from('visualizers')
-              .createSignedUrl(filePath, 3600) // 1 hour expiry
-            
-            return {
-              ...visualizer,
-              signedUrl: signedUrlData?.signedUrl || visualizer.image_url
-            }
-          } catch (urlError) {
-            console.warn('Could not generate signed URL for', visualizer.image_url, urlError)
-            return {
-              ...visualizer,
-              signedUrl: visualizer.image_url
-            }
-          }
-        })
-      )
-      
-      setVisualizers(visualizersWithSignedUrls)
+      setVisualizers(data || [])
     } catch (error) {
       console.error('Error fetching visualizers:', error)
     } finally {
@@ -584,12 +543,12 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
                             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
                               <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 relative">
                                 <img 
-                                  src={visualizer.signedUrl || visualizer.image_url} 
+                                  src={visualizer.image_url} 
                                   alt={visualizer.description}
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
-                                    console.error('Image failed to load:', visualizer.signedUrl || visualizer.image_url)
-                                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
+                                    console.error('Image failed to load:', visualizer.image_url)
+                                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ci8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
                                   }}
                                 />
                               </div>

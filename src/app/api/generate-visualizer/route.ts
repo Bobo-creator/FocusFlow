@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
         lesson_plan_id: lessonPlanId,
         concept,
         image_url: permanentImageUrl,
-        grade_level: gradeLevel,
         description: description || `Visual representation of ${concept} for ${gradeLevel} students`,
       })
       .select()
