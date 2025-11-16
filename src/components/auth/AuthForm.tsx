@@ -46,20 +46,39 @@ export default function AuthForm() {
               role: role,
             })
           
-          if (profileError) throw profileError
-          setMessage('Check your email to confirm your account!')
+          if (profileError) {
+            console.error('Profile creation error:', profileError)
+            // Don't throw here - user is created, just profile failed
+            setMessage('Account created! Please check your email to confirm, then sign in.')
+          } else {
+            setMessage('Account created! Please check your email to confirm, then sign in.')
+          }
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error, data } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
         
-        if (error) throw error
-        setMessage('Signed in successfully!')
+        if (error) {
+          console.error('Login error:', error)
+          if (error.message.includes('Invalid login credentials')) {
+            setMessage('Invalid email or password. Make sure you\'ve confirmed your email address.')
+          } else if (error.message.includes('Email not confirmed')) {
+            setMessage('Please check your email and click the confirmation link before signing in.')
+          } else {
+            setMessage(error.message)
+          }
+          return
+        }
+        
+        if (data.user) {
+          setMessage('Signed in successfully!')
+        }
       }
     } catch (error: any) {
-      setMessage(error.message)
+      console.error('Auth error:', error)
+      setMessage(error.message || 'An unexpected error occurred')
     } finally {
       setLoading(false)
     }

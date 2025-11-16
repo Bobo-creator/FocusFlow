@@ -6,13 +6,20 @@ import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import LessonPlanUpload from '@/components/LessonPlanUpload'
 import LessonPlanList from '@/components/LessonPlanList'
-import { LogOut, BookOpen, Brain, Clock, Users } from 'lucide-react'
+import LiveCoaching from '@/components/LiveCoaching'
+import { LogOut, BookOpen, Brain, Clock, Users, RefreshCw } from 'lucide-react'
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('upload')
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    lessonPlans: 0,
+    aiTips: 0,
+    breakReminders: 0,
+    visualAids: 0
+  })
   const supabase = createClientSupabase()
 
   useEffect(() => {
@@ -27,6 +34,9 @@ export default function Dashboard() {
           .eq('id', user.id)
           .single()
         setProfile(data)
+        
+        // Fetch stats after getting user profile
+        await fetchStats(user.id)
       }
       setLoading(false)
     }
@@ -34,8 +44,71 @@ export default function Dashboard() {
     getProfile()
   }, [supabase])
 
+  const fetchStats = async (userId: string) => {
+    try {
+      // First get user's lesson plan IDs
+      const { data: lessonPlans } = await supabase
+        .from('lesson_plans')
+        .select('id')
+        .eq('teacher_id', userId)
+
+      const lessonPlanIds = lessonPlans?.map(lp => lp.id) || []
+
+      // Fetch lesson plans count
+      const { count: lessonCount } = await supabase
+        .from('lesson_plans')
+        .select('*', { count: 'exact', head: true })
+        .eq('teacher_id', userId)
+
+      // Fetch coaching tips count for user's lessons
+      let tipsCount = 0
+      if (lessonPlanIds.length > 0) {
+        const { count } = await supabase
+          .from('coaching_tips')
+          .select('*', { count: 'exact', head: true })
+          .in('lesson_plan_id', lessonPlanIds)
+        tipsCount = count || 0
+      }
+
+      // Fetch break reminders count for user's lessons
+      let breakCount = 0
+      if (lessonPlanIds.length > 0) {
+        const { count } = await supabase
+          .from('break_reminders')
+          .select('*', { count: 'exact', head: true })
+          .in('lesson_plan_id', lessonPlanIds)
+        breakCount = count || 0
+      }
+
+      // Fetch visualizers count for user's lessons
+      let visualCount = 0
+      if (lessonPlanIds.length > 0) {
+        const { count } = await supabase
+          .from('visualizers')
+          .select('*', { count: 'exact', head: true })
+          .in('lesson_plan_id', lessonPlanIds)
+        visualCount = count || 0
+      }
+
+      setStats({
+        lessonPlans: lessonCount || 0,
+        aiTips: tipsCount,
+        breakReminders: breakCount,
+        visualAids: visualCount
+      })
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    }
+  }
+
   const handleSignOut = async () => {
     await supabase.auth.signOut()
+  }
+
+  const refreshStats = async () => {
+    if (user?.id) {
+      await fetchStats(user.id)
+    }
   }
 
   if (loading) {
@@ -73,13 +146,25 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Your Progress</h2>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={refreshStats}
+            disabled={loading}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh Stats
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center">
               <BookOpen className="w-8 h-8 text-blue-600" />
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Lesson Plans</h3>
-                <p className="text-2xl font-semibold text-gray-900">0</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.lessonPlans}</p>
               </div>
             </div>
           </div>
@@ -88,7 +173,7 @@ export default function Dashboard() {
               <Brain className="w-8 h-8 text-green-600" />
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">AI Tips Generated</h3>
-                <p className="text-2xl font-semibold text-gray-900">0</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.aiTips}</p>
               </div>
             </div>
           </div>
@@ -97,7 +182,7 @@ export default function Dashboard() {
               <Clock className="w-8 h-8 text-orange-600" />
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Break Reminders</h3>
-                <p className="text-2xl font-semibold text-gray-900">0</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.breakReminders}</p>
               </div>
             </div>
           </div>
@@ -106,7 +191,7 @@ export default function Dashboard() {
               <Users className="w-8 h-8 text-purple-600" />
               <div className="ml-4">
                 <h3 className="text-sm font-medium text-gray-500">Visual Aids</h3>
-                <p className="text-2xl font-semibold text-gray-900">0</p>
+                <p className="text-2xl font-semibold text-gray-900">{stats.visualAids}</p>
               </div>
             </div>
           </div>
@@ -175,13 +260,7 @@ export default function Dashboard() {
           )}
           
           {activeTab === 'coaching' && profile?.role === 'teacher' && (
-            <div className="text-center py-12">
-              <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Live AI Coaching</h3>
-              <p className="text-gray-500">
-                Upload a lesson plan first to access real-time coaching tips during your lesson.
-              </p>
-            </div>
+            <LiveCoaching userId={user?.id} />
           )}
           
           {activeTab === 'student-progress' && profile?.role === 'parent' && (

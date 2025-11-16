@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
-import { BookOpen, Brain, Clock, Eye, Trash2 } from 'lucide-react'
+import BreakReminderSystem from '@/components/BreakReminderSystem'
+import { BookOpen, Brain, Clock, Eye, Trash2, Image } from 'lucide-react'
 
 interface LessonPlan {
   id: string
@@ -15,6 +16,14 @@ interface LessonPlan {
   created_at: string
 }
 
+interface Visualizer {
+  id: string
+  concept: string
+  image_url: string
+  description: string
+  created_at: string
+}
+
 interface LessonPlanListProps {
   userId?: string
 }
@@ -23,6 +32,10 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
   const [lessonPlans, setLessonPlans] = useState<LessonPlan[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<LessonPlan | null>(null)
+  const [showCoaching, setShowCoaching] = useState(false)
+  const [generatingVisual, setGeneratingVisual] = useState(false)
+  const [visualizers, setVisualizers] = useState<Visualizer[]>([])
+  const [loadingVisualizers, setLoadingVisualizers] = useState(false)
   const supabase = createClientSupabase()
 
   useEffect(() => {
@@ -30,6 +43,14 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
       fetchLessonPlans()
     }
   }, [userId])
+
+  useEffect(() => {
+    if (selectedPlan) {
+      fetchVisualizers(selectedPlan.id)
+    } else {
+      setVisualizers([])
+    }
+  }, [selectedPlan])
 
   const fetchLessonPlans = async () => {
     try {
@@ -45,6 +66,24 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
       console.error('Error fetching lesson plans:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchVisualizers = async (lessonPlanId: string) => {
+    setLoadingVisualizers(true)
+    try {
+      const { data, error } = await supabase
+        .from('visualizers')
+        .select('*')
+        .eq('lesson_plan_id', lessonPlanId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setVisualizers(data || [])
+    } catch (error) {
+      console.error('Error fetching visualizers:', error)
+    } finally {
+      setLoadingVisualizers(false)
     }
   }
 
@@ -66,6 +105,80 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
     } catch (error) {
       console.error('Error deleting lesson plan:', error)
     }
+  }
+
+  const startLiveCoaching = () => {
+    setShowCoaching(true)
+  }
+
+  const generateVisuals = async () => {
+    if (!selectedPlan) return
+    
+    setGeneratingVisual(true)
+    try {
+      // Extract concepts from the lesson content for visual generation
+      const concepts = extractConcepts(selectedPlan.original_content)
+      
+      for (const concept of concepts.slice(0, 2)) { // Limit to 2 visuals
+        const response = await fetch('/api/generate-visualizer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonPlanId: selectedPlan.id,
+            concept: concept,
+            gradeLevel: selectedPlan.grade_level,
+            description: `Visual aid for ${concept} in ${selectedPlan.subject}`
+          }),
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate visual')
+        }
+      }
+      
+      // Refresh visualizers to show new ones
+      await fetchVisualizers(selectedPlan.id)
+      alert('Visual aids generated! Check below for new images.')
+    } catch (error) {
+      console.error('Error generating visuals:', error)
+      alert('Failed to generate visual aids. Please try again.')
+    } finally {
+      setGeneratingVisual(false)
+    }
+  }
+
+  const extractConcepts = (content: string): string[] => {
+    // Simple concept extraction - look for key terms
+    const concepts = []
+    const text = content.toLowerCase()
+    
+    // Science concepts
+    if (text.includes('water cycle')) concepts.push('water cycle')
+    if (text.includes('evaporation')) concepts.push('evaporation')
+    if (text.includes('condensation')) concepts.push('condensation')
+    if (text.includes('precipitation')) concepts.push('precipitation')
+    
+    // Math concepts
+    if (text.includes('fraction')) concepts.push('fractions')
+    if (text.includes('multiplication')) concepts.push('multiplication')
+    if (text.includes('division')) concepts.push('division')
+    
+    // Default fallback
+    if (concepts.length === 0) {
+      concepts.push('lesson concept diagram')
+    }
+    
+    return concepts
+  }
+
+  const getBreakInterval = (gradeLevel: string): number => {
+    const intervals: { [key: string]: number } = {
+      'Pre-K': 8, 'Kindergarten': 10, '1st Grade': 12, '2nd Grade': 12,
+      '3rd Grade': 15, '4th Grade': 15, '5th Grade': 18, '6th Grade': 20,
+      '7th Grade': 20, '8th Grade': 22, '9th Grade': 25, '10th Grade': 25,
+      '11th Grade': 25, '12th Grade': 30,
+    }
+    return intervals[gradeLevel] || 20
   }
 
   if (loading) {
@@ -201,16 +314,89 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
                 </div>
               )}
 
+              {/* Generated Visual Aids */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <Image className="w-4 h-4 mr-2 text-purple-600" />
+                  Visual Aids
+                  {loadingVisualizers && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 ml-2"></div>
+                  )}
+                </h4>
+                {visualizers.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {visualizers.map((visualizer) => (
+                      <div key={visualizer.id} className="bg-purple-50 p-4 rounded-md border border-purple-200">
+                        <img 
+                          src={visualizer.image_url} 
+                          alt={visualizer.description}
+                          className="w-full h-48 object-cover rounded-md mb-2"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
+                          }}
+                        />
+                        <h5 className="font-medium text-purple-900 mb-1 capitalize">{visualizer.concept}</h5>
+                        <p className="text-sm text-purple-700">{visualizer.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
+                    <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">No visual aids generated yet.</p>
+                    <p className="text-xs text-gray-500">Click "Generate Visuals" to create AI-powered images for this lesson.</p>
+                  </div>
+                )}
+              </div>
+
               <div className="flex space-x-3">
-                <Button size="sm" className="flex-1">
+                <Button 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={startLiveCoaching}
+                >
                   <Clock className="w-4 h-4 mr-2" />
                   Start Live Coaching
                 </Button>
-                <Button variant="secondary" size="sm" className="flex-1">
-                  <Brain className="w-4 h-4 mr-2" />
-                  Generate Visuals
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={generateVisuals}
+                  disabled={generatingVisual}
+                >
+                  {generatingVisual ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Image className="w-4 h-4 mr-2" />
+                      Generate Visuals
+                    </>
+                  )}
                 </Button>
               </div>
+              
+              {showCoaching && selectedPlan && (
+                <div className="mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-blue-900">Live Coaching Mode</h4>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      onClick={() => setShowCoaching(false)}
+                    >
+                      Exit Coaching
+                    </Button>
+                  </div>
+                  <BreakReminderSystem 
+                    intervalMinutes={getBreakInterval(selectedPlan.grade_level)}
+                    reminderText={`Time for a brain break! Perfect for ${selectedPlan.grade_level} attention spans.`}
+                  />
+                </div>
+              )}
             </div>
           </div>
         ) : (
