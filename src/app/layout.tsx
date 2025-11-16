@@ -1,5 +1,12 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter'
+})
 
 export const metadata: Metadata = {
   title: 'FocusFlow - ADHD-Friendly Teaching Companion',
@@ -33,7 +40,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         <meta name="theme-color" content="#4f46e5" />
       </head>
-      <body className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 antialiased">
+      <body className={`${inter.variable} min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 antialiased font-sans`}>
         <div className="relative">
           {children}
         </div>

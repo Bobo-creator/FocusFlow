@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
-import { Upload, FileText, Loader, CheckCircle, AlertCircle, X, Plus, Sparkles, Brain, Clock } from 'lucide-react'
+import { Upload, FileText, Loader, CheckCircle, AlertCircle, X, Plus, Sparkles, Brain, Clock, Lightbulb } from 'lucide-react'
 import * as pdlParser from 'pdf-parse'
 import mammoth from 'mammoth'
 
