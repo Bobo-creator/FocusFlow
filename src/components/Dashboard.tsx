@@ -282,78 +282,158 @@ export default function Dashboard() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
-            {profile?.role === 'teacher' && (
-              <>
-                <button
-                  onClick={() => setActiveTab('upload')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'upload'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Upload Lesson Plan
-                </button>
-                <button
-                  onClick={() => setActiveTab('lessons')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'lessons'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  My Lesson Plans
-                </button>
-                <button
-                  onClick={() => setActiveTab('coaching')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'coaching'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Live Coaching
-                </button>
-              </>
-            )}
-            {profile?.role === 'parent' && (
-              <button
-                onClick={() => setActiveTab('student-progress')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'student-progress'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Student Progress
-              </button>
-            )}
-          </nav>
+        <div className="mb-8">
+          <div className="bg-white/60 backdrop-blur-sm border border-indigo-100 rounded-2xl p-1">
+            <nav className="flex space-x-1">
+              {profile?.role === 'teacher' && (
+                <>
+                  <button
+                    onClick={() => setActiveTab('upload')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'upload'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Lesson</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('lessons')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'lessons'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>My Lessons</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('coaching')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'coaching'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Live Coaching</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('analytics')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'analytics'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span>Analytics</span>
+                  </button>
+                </>
+              )}
+              {profile?.role === 'parent' && (
+                <>
+                  <button
+                    onClick={() => setActiveTab('student-progress')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'student-progress'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <Users className="w-4 h-4" />
+                    <span>Student Progress</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('resources')}
+                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      activeTab === 'resources'
+                        ? 'bg-white shadow-md text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>ADHD Resources</span>
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-indigo-100 overflow-hidden">
           {activeTab === 'upload' && profile?.role === 'teacher' && (
-            <LessonPlanUpload userId={user?.id} />
+            <div className="p-8">
+              <LessonPlanUpload userId={user?.id} />
+            </div>
           )}
           
           {activeTab === 'lessons' && profile?.role === 'teacher' && (
-            <LessonPlanList userId={user?.id} />
+            <div className="p-8">
+              <LessonPlanList userId={user?.id} />
+            </div>
           )}
           
           {activeTab === 'coaching' && profile?.role === 'teacher' && (
-            <LiveCoaching userId={user?.id} />
+            <div className="p-8">
+              <LiveCoaching userId={user?.id} />
+            </div>
+          )}
+          
+          {activeTab === 'analytics' && profile?.role === 'teacher' && (
+            <div className="p-8">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Analytics Dashboard</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Track your teaching impact and student engagement metrics.
+                </p>
+                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6 max-w-sm mx-auto">
+                  <p className="text-sm text-indigo-700 font-medium">Coming Soon!</p>
+                  <p className="text-xs text-indigo-600 mt-1">Advanced analytics and insights</p>
+                </div>
+              </div>
+            </div>
           )}
           
           {activeTab === 'student-progress' && profile?.role === 'parent' && (
-            <div className="text-center py-12">
-              <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Student Progress</h3>
-              <p className="text-gray-500">
-                View your child's lesson summaries and teacher notes here.
-              </p>
+            <div className="p-8">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Student Progress</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  View your child's lesson summaries, teacher notes, and learning progress.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-sm mx-auto">
+                  <p className="text-sm text-blue-700 font-medium">Connect with Teachers</p>
+                  <p className="text-xs text-blue-600 mt-1">Ask your teacher for access to view progress</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'resources' && profile?.role === 'parent' && (
+            <div className="p-8">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <BookOpen className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">ADHD Resources</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  Access helpful resources, tips, and strategies for supporting ADHD learners at home.
+                </p>
+                <div className="bg-green-50 border border-green-200 rounded-xl p-6 max-w-sm mx-auto">
+                  <p className="text-sm text-green-700 font-medium">Resource Library</p>
+                  <p className="text-xs text-green-600 mt-1">Coming soon with expert guidance</p>
+                </div>
+              </div>
             </div>
           )}
         </div>
