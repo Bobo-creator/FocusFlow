@@ -10,6 +10,7 @@ interface Visualizer {
   concept: string
   image_url: string
   description: string
+  grade_level?: string
   created_at: string
   lesson_plans: {
     id: string
@@ -280,7 +281,7 @@ export default function VisualAidsTab({ userId }: VisualAidsTabProps) {
                           {visualizer.lesson_plans.subject}
                         </span>
                         <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
-                          {visualizer.lesson_plans?.grade_level}
+                          {visualizer.grade_level || visualizer.lesson_plans?.grade_level}
                         </span>
                       </div>
                     </div>
