@@ -381,108 +381,158 @@ export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
           </div>
         </div>
 
-        {/* Manual Text Input */}
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-            Or paste your lesson plan text
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={8}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Paste your lesson plan content here..."
-          />
-        </div>
-
         {/* Lesson Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-              Subject *
-            </label>
-            <select
-              id="subject"
-              required
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select a subject</option>
-              {subjects.map((subj) => (
-                <option key={subj} value={subj}>{subj}</option>
-              ))}
-            </select>
-          </div>
+        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Lesson Details</h3>
+          
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
+                Lesson Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                placeholder="e.g., Introduction to Fractions"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Subject *
+                </label>
+                <select
+                  id="subject"
+                  required
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+                >
+                  <option value="">Choose subject</option>
+                  {subjects.map((subj) => (
+                    <option key={subj} value={subj}>{subj}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div>
-            <label htmlFor="gradeLevel" className="block text-sm font-medium text-gray-700 mb-2">
-              Grade Level *
-            </label>
-            <select
-              id="gradeLevel"
-              required
-              value={gradeLevel}
-              onChange={(e) => setGradeLevel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select grade level</option>
-              {gradeLevels.map((grade) => (
-                <option key={grade} value={grade}>{grade}</option>
-              ))}
-            </select>
+              <div>
+                <label htmlFor="gradeLevel" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Grade Level *
+                </label>
+                <select
+                  id="gradeLevel"
+                  required
+                  value={gradeLevel}
+                  onChange={(e) => setGradeLevel(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+                >
+                  <option value="">Choose grade</option>
+                  {gradeLevels.map((grade) => (
+                    <option key={grade} value={grade}>{grade}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-            Lesson Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Enter lesson title"
-          />
-        </div>
-
-        <Button
-          type="submit"
-          disabled={uploading || processing || !content.trim() || !title.trim() || !subject || !gradeLevel}
-          className="w-full"
-          size="lg"
-        >
-          {uploading ? (
-            <>
-              <Loader className="w-4 h-4 mr-2 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4 mr-2" />
-              Upload & Generate ADHD Adaptations
-            </>
+        {/* Submit Button */}
+        <div className="text-center">
+          <Button
+            type="submit"
+            disabled={uploading || processing || !content.trim() || !title.trim() || !subject || !gradeLevel}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            size="lg"
+          >
+            {uploading ? (
+              <>
+                <Loader className="w-5 h-5 mr-3 animate-spin" />
+                Processing Your Lesson...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-3" />
+                Generate ADHD Adaptations
+              </>
+            )}
+          </Button>
+          
+          {(!content.trim() || !title.trim() || !subject || !gradeLevel) && (
+            <p className="text-sm text-gray-500 mt-3">
+              Please fill in all required fields to continue
+            </p>
           )}
-        </Button>
+        </div>
+        
+        {/* What You'll Get Preview */}
+        <div className="bg-indigo-50 rounded-2xl p-6 border border-indigo-200">
+          <h4 className="font-semibold text-indigo-900 mb-4 flex items-center">
+            <Sparkles className="w-5 h-5 mr-2" />
+            What you'll get with AI adaptation:
+          </h4>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Brain className="w-3 h-3 text-indigo-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-indigo-900">Chunked Learning</p>
+                  <p className="text-xs text-indigo-700">10-15 minute focused segments</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Lightbulb className="w-3 h-3 text-indigo-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-indigo-900">Visual Aids</p>
+                  <p className="text-xs text-indigo-700">AI-generated illustrations</p>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Clock className="w-3 h-3 text-indigo-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-indigo-900">Break Reminders</p>
+                  <p className="text-xs text-indigo-700">Age-appropriate timing</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CheckCircle className="w-3 h-3 text-indigo-700" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-indigo-900">Coaching Tips</p>
+                  <p className="text-xs text-indigo-700">Real-time suggestions</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </form>
 
       {message && (
-        <div className={`mt-4 p-4 rounded-md ${
+        <div className={`mt-6 p-4 rounded-xl border ${
           message.includes('Error') || message.includes('error')
-            ? 'bg-red-50 text-red-700 border border-red-200'
-            : 'bg-green-50 text-green-700 border border-green-200'
+            ? 'bg-red-50 text-red-700 border-red-200'
+            : 'bg-green-50 text-green-700 border-green-200'
         }`}>
           <div className="flex items-center">
             {message.includes('Error') || message.includes('error') ? (
-              <AlertCircle className="w-5 h-5 mr-2" />
+              <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
             ) : (
-              <CheckCircle className="w-5 h-5 mr-2" />
+              <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0" />
             )}
-            {message}
+            <span className="text-sm font-medium">{message}</span>
           </div>
         </div>
       )}
