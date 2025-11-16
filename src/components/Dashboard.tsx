@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import LessonPlanUpload from '@/components/LessonPlanUpload'
 import LessonPlanList from '@/components/LessonPlanList'
 import LiveCoaching from '@/components/LiveCoaching'
-import { LogOut, BookOpen, Brain, Clock, Users, RefreshCw } from 'lucide-react'
+import { LogOut, BookOpen, Brain, Clock, Users, RefreshCw, Upload, BarChart3, Lightbulb, Timer, Bell, Settings, Search, Plus, GraduationCap, Heart, TrendingUp, Zap } from 'lucide-react'
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -120,22 +120,48 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white/80 backdrop-blur-md border-b border-indigo-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-blue-600">🎯 FocusFlow</h1>
-              <span className="ml-4 text-gray-600">
-                Welcome back, {profile?.full_name || user?.email}
-              </span>
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  FocusFlow
+                </h1>
+              </div>
+              <div className="hidden md:flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-600">
+                  Welcome back, <span className="font-semibold text-gray-900">{profile?.full_name || user?.email?.split('@')[0]}</span>
+                </span>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {profile?.role === 'teacher' ? '👩‍🏫 Teacher' : '👨‍👩‍👧‍👦 Parent'}
-              </span>
-              <Button variant="secondary" onClick={handleSignOut}>
+            <div className="flex items-center space-x-3">
+              <div className="hidden sm:flex items-center space-x-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-200">
+                {profile?.role === 'teacher' ? (
+                  <>
+                    <GraduationCap className="w-4 h-4 text-indigo-600" />
+                    <span className="text-sm font-medium text-indigo-700">Teacher</span>
+                  </>
+                ) : (
+                  <>
+                    <Heart className="w-4 h-4 text-indigo-600" />
+                    <span className="text-sm font-medium text-indigo-700">Parent</span>
+                  </>
+                )}
+              </div>
+              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <Bell className="w-5 h-5" />
+              </button>
+              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <Settings className="w-5 h-5" />
+              </button>
+              <Button variant="secondary" onClick={handleSignOut} size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
