@@ -273,42 +273,112 @@ export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* File Upload */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Upload File (PDF, DOCX, or TXT)
-          </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-            <input
-              type="file"
-              accept=".pdf,.docx,.doc,.txt"
-              onChange={handleFileChange}
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload" className="cursor-pointer">
-              {file ? (
-                <div className="flex items-center justify-center">
-                  <FileText className="w-8 h-8 text-blue-600 mr-2" />
-                  <span className="text-sm text-gray-900">{file.name}</span>
-                </div>
-              ) : (
-                <div>
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                    Click to upload or drag and drop your lesson plan
-                  </p>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Upload Options */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* File Upload */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <Upload className="w-5 h-5 text-indigo-600" />
+              <label className="text-lg font-semibold text-gray-900">
+                Upload File
+              </label>
+            </div>
+            <div className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${
+              file 
+                ? 'border-green-300 bg-green-50' 
+                : 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'
+            }`}>
+              <input
+                type="file"
+                accept=".pdf,.docx,.doc,.txt"
+                onChange={handleFileChange}
+                className="hidden"
+                id="file-upload"
+                disabled={processing}
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                {file ? (
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto">
+                      <FileText className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{file.name}</p>
+                      <p className="text-sm text-gray-500">File ready for processing</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFile(null)
+                        setContent('')
+                      }}
+                      className="inline-flex items-center space-x-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Remove file</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto">
+                      <Upload className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-medium text-gray-900 mb-1">
+                        Drop your file here
+                      </p>
+                      <p className="text-sm text-gray-500 mb-2">
+                        or click to browse
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Supports PDF, DOCX, and TXT files
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </label>
+              {processing && (
+                <div className="absolute inset-0 bg-white/90 rounded-2xl flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader className="w-6 h-6 text-indigo-600 mx-auto mb-2 animate-spin" />
+                    <p className="text-sm text-indigo-600 font-medium">Processing file...</p>
+                  </div>
                 </div>
               )}
-            </label>
-          </div>
-          {processing && (
-            <div className="mt-2 flex items-center text-sm text-blue-600">
-              <Loader className="w-4 h-4 mr-2 animate-spin" />
-              Processing file...
             </div>
-          )}
+            <div className="flex items-center justify-center">
+              <span className="text-sm text-gray-500 bg-white px-3">OR</span>
+            </div>
+          </div>
+
+          {/* Manual Text Input */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <FileText className="w-5 h-5 text-indigo-600" />
+              <label className="text-lg font-semibold text-gray-900">
+                Paste Content
+              </label>
+            </div>
+            <div className="relative">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={12}
+                className="w-full px-4 py-3 border border-gray-300 rounded-2xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                placeholder="Paste your lesson plan content here...\n\nExample:\n• Learning objectives\n• Materials needed\n• Lesson activities\n• Assessment methods"
+              />
+              {content && (
+                <button
+                  type="button"
+                  onClick={() => setContent('')}
+                  className="absolute top-3 right-3 p-1 text-gray-400 hover:text-red-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Manual Text Input */}
