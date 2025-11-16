@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import LessonPlanUpload from '@/components/LessonPlanUpload'
 import LessonPlanList from '@/components/LessonPlanList'
 import LiveCoaching from '@/components/LiveCoaching'
+import VisualAidsTab from '@/components/VisualAidsTab'
 import { LogOut, BookOpen, Brain, Clock, Users, RefreshCw, Upload, BarChart3, Lightbulb, Timer, Bell, Settings, Search, Plus, GraduationCap, Heart, TrendingUp, Zap, Image, Palette } from 'lucide-react'
 
 export default function Dashboard() {
@@ -396,92 +397,7 @@ export default function Dashboard() {
           
           {activeTab === 'visual-aids' && profile?.role === 'teacher' && (
             <div className="p-8">
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Visual Aids Gallery</h2>
-                    <p className="text-gray-600">
-                      Browse and manage AI-generated visual aids for your lessons
-                    </p>
-                  </div>
-                  <Button 
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                    onClick={() => {
-                      // TODO: Open visual aid generator
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Visual Aid
-                  </Button>
-                </div>
-                
-                {/* Search and Filter */}
-                <div className="flex items-center space-x-4 mb-6">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder="Search visual aids..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">All Subjects</option>
-                    <option value="math">Mathematics</option>
-                    <option value="science">Science</option>
-                    <option value="english">English</option>
-                    <option value="social-studies">Social Studies</option>
-                  </select>
-                </div>
-                
-                {/* Visual Aids Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {/* Placeholder cards */}
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
-                    <div key={item} className="group">
-                      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
-                        <div className="aspect-video bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                            <Image className="w-8 h-8 text-white" />
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-900 mb-1">Fraction Pizza Diagram</h3>
-                          <p className="text-sm text-gray-500 mb-2">Mathematics • 3rd Grade</p>
-                          <p className="text-xs text-gray-400 mb-3">Created 2 days ago</p>
-                          <div className="flex items-center space-x-2">
-                            <Button size="sm" variant="secondary" className="flex-1">
-                              <span>View</span>
-                            </Button>
-                            <Button size="sm" variant="primary" className="flex-1">
-                              <span>Use</span>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Empty state for when no visual aids */}
-                  {/* <div className="col-span-full">
-                    <div className="text-center py-12">
-                      <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <Palette className="w-10 h-10 text-white" />
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-3">No Visual Aids Yet</h3>
-                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        Create your first AI-generated visual aid to help explain complex concepts to your ADHD students.
-                      </p>
-                      <Button 
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Your First Visual Aid
-                      </Button>
-                    </div>
-                  </div> */}
-                </div>
-              </div>
+              <VisualAidsTab userId={user?.id} />
             </div>
           )}
           
