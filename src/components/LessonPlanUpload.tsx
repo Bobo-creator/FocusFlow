@@ -214,23 +214,62 @@ export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
 
   if (uploadStep === 'success') {
     return (
-      <div className="text-center py-12">
-        <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Success!</h3>
-        <p className="text-gray-500 mb-4">{message}</p>
-        <p className="text-sm text-gray-600">
-          Check the "My Lesson Plans" tab to view your ADHD adaptations and coaching tips.
-        </p>
+      <div className="text-center py-16">
+        <div className="max-w-md mx-auto">
+          <div className="relative mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-white" />
+            </div>
+            <div className="absolute -top-1 -right-1 animate-bounce">
+              <div className="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-yellow-700" />
+              </div>
+            </div>
+          </div>
+          
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">🎉 Lesson Adapted Successfully!</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          
+          <div className="bg-green-50 rounded-2xl p-6 border border-green-200 mb-6">
+            <h4 className="font-semibold text-green-900 mb-3">What's ready for you:</h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-green-800">ADHD-friendly lesson structure</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-green-800">Real-time coaching tips</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-green-800">Smart break reminders</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-green-800">Visual aid suggestions</span>
+              </div>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-600">
+            Check the <span className="font-semibold text-indigo-600">"My Lessons"</span> tab to view your adaptations!
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Lesson Plan</h2>
-        <p className="text-gray-600">
-          Upload your lesson plan and get AI-powered ADHD-friendly adaptations, coaching tips, and visual aids.
+    <div className="max-w-4xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-2 bg-indigo-50 border border-indigo-200 rounded-full px-4 py-2 text-sm font-medium text-indigo-700 mb-4">
+          <Brain className="w-4 h-4" />
+          <span>AI-Powered ADHD Adaptation</span>
+        </div>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">Upload Your Lesson Plan</h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Transform any lesson into an ADHD-friendly experience with intelligent adaptations, coaching tips, and visual aids.
         </p>
       </div>
 
