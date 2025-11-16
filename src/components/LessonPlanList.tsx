@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import BreakReminderSystem from '@/components/BreakReminderSystem'
-import { BookOpen, Brain, Clock, Eye, Trash2, Image, Play, Layers, Palette, RefreshCw, ArrowRight, CheckCircle, Sparkles } from 'lucide-react'
+import { BookOpen, Brain, Clock, Eye, Trash2, Image, Play, Layers, Palette, RefreshCw, ArrowRight, CheckCircle, Sparkles, BarChart3 } from 'lucide-react'
 
 interface LessonPlan {
   id: string
@@ -306,147 +306,343 @@ export default function LessonPlanList({ userId }: LessonPlanListProps) {
         </div>
       </div>
 
-      {/* Selected Plan Details */}
-      <div>
+      {/* Lesson Detail View */}
+      <div className="flex-1 flex flex-col">
         {selectedPlan ? (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{selectedPlan.title}</h3>
-              <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {selectedPlan.subject}
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  {selectedPlan.grade_level}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Original Lesson Plan
-                </h4>
-                <div className="bg-gray-50 p-4 rounded-md border">
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {selectedPlan.original_content.length > 500
-                      ? `${selectedPlan.original_content.substring(0, 500)}...`
-                      : selectedPlan.original_content
-                    }
-                  </p>
-                </div>
-              </div>
-
-              {selectedPlan.adhd_adapted_content && (
+          <>
+            {/* Detail Header */}
+            <div className="bg-white border-b border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                    <Brain className="w-4 h-4 mr-2 text-green-600" />
-                    ADHD-Friendly Adaptations
-                  </h4>
-                  <div className="bg-green-50 p-4 rounded-md border border-green-200">
-                    <div 
-                      className="text-sm text-gray-700 prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ 
-                        __html: selectedPlan.adhd_adapted_content.replace(/\n/g, '<br>') 
-                      }}
-                    />
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedPlan.title}</h1>
+                  <div className="flex items-center space-x-3">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-indigo-100 text-indigo-700">
+                      {selectedPlan.subject}
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-gray-100 text-gray-700">
+                      {selectedPlan.grade_level}
+                    </span>
+                    {selectedPlan.adhd_adapted_content && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-green-100 text-green-700">
+                        <Brain className="w-4 h-4 mr-1" />
+                        ADHD Adapted
+                      </span>
+                    )}
                   </div>
                 </div>
-              )}
-
-              {/* Generated Visual Aids */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                  <Image className="w-4 h-4 mr-2 text-purple-600" />
-                  Visual Aids
-                  {loadingVisualizers && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 ml-2"></div>
-                  )}
-                </h4>
-                {visualizers.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {visualizers.map((visualizer) => (
-                      <div key={visualizer.id} className="bg-purple-50 p-4 rounded-md border border-purple-200">
-                        <img 
-                          src={visualizer.image_url} 
-                          alt={visualizer.description}
-                          className="w-full h-48 object-cover rounded-md mb-2"
-                          onError={(e) => {
-                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
-                          }}
-                        />
-                        <h5 className="font-medium text-purple-900 mb-1 capitalize">{visualizer.concept}</h5>
-                        <p className="text-sm text-purple-700">{visualizer.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200 text-center">
-                    <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">No visual aids generated yet.</p>
-                    <p className="text-xs text-gray-500">Click "Generate Visuals" to create AI-powered images for this lesson.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex space-x-3">
-                <Button 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={startLiveCoaching}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Start Live Coaching
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={generateVisuals}
-                  disabled={generatingVisual}
-                >
-                  {generatingVisual ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Image className="w-4 h-4 mr-2" />
-                      Generate Visuals
-                    </>
-                  )}
-                </Button>
+                
+                <div className="flex items-center space-x-3">
+                  <Button 
+                    onClick={generateVisuals}
+                    disabled={generatingVisual}
+                    variant="secondary"
+                    className="group"
+                  >
+                    {generatingVisual ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Palette className="w-4 h-4 mr-2 group-hover:text-purple-600" />
+                        Generate Visuals
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={startLiveCoaching}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Coaching
+                  </Button>
+                </div>
               </div>
               
-              {showCoaching && selectedPlan && (
-                <div className="mt-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium text-blue-900">Live Coaching Mode</h4>
+              {/* Tab Navigation */}
+              <div className="flex space-x-1 bg-gray-100 rounded-xl p-1">
+                {[
+                  { id: 'overview', label: 'Overview', icon: Layers },
+                  { id: 'original', label: 'Original', icon: BookOpen },
+                  { id: 'adapted', label: 'ADHD Adapted', icon: Brain },
+                  { id: 'visual-aids', label: 'Visual Aids', icon: Palette },
+                  { id: 'coaching', label: 'Live Coaching', icon: Clock },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveDetailTab(tab.id as any)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeDetailTab === tab.id
+                        ? 'bg-white shadow-sm text-indigo-700 border border-indigo-200'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Tab Content */}
+            <div className="flex-1 overflow-y-auto">
+              {activeDetailTab === 'overview' && (
+                <div className="p-6 space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Quick Stats */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                        <BarChart3 className="w-5 h-5 mr-2 text-indigo-600" />
+                        Lesson Overview
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Subject:</span>
+                          <span className="font-medium">{selectedPlan.subject}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Grade Level:</span>
+                          <span className="font-medium">{selectedPlan.grade_level}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Created:</span>
+                          <span className="font-medium">{new Date(selectedPlan.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Break Interval:</span>
+                          <span className="font-medium">{getBreakInterval(selectedPlan.grade_level)} min</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Quick Actions */}
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200">
+                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                        <Sparkles className="w-5 h-5 mr-2 text-indigo-600" />
+                        Quick Actions
+                      </h3>
+                      <div className="space-y-3">
+                        <Button 
+                          className="w-full justify-start" 
+                          variant="secondary"
+                          onClick={() => setActiveDetailTab('original')}
+                        >
+                          <BookOpen className="w-4 h-4 mr-2" />
+                          View Original Lesson
+                        </Button>
+                        <Button 
+                          className="w-full justify-start" 
+                          variant="secondary"
+                          onClick={() => setActiveDetailTab('adapted')}
+                        >
+                          <Brain className="w-4 h-4 mr-2" />
+                          View ADHD Adaptation
+                        </Button>
+                        <Button 
+                          className="w-full justify-start" 
+                          variant="secondary"
+                          onClick={() => setActiveDetailTab('visual-aids')}
+                        >
+                          <Palette className="w-4 h-4 mr-2" />
+                          Manage Visual Aids
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Content Preview */}
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+                    <h3 className="font-semibold text-gray-900 mb-4">Content Preview</h3>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <p className="text-sm text-gray-700 line-clamp-4">
+                        {selectedPlan.original_content.substring(0, 300)}...
+                      </p>
+                    </div>
                     <Button 
+                      className="mt-4" 
                       variant="secondary" 
                       size="sm"
-                      onClick={() => setShowCoaching(false)}
+                      onClick={() => setActiveDetailTab('original')}
                     >
-                      Exit Coaching
+                      Read Full Content <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   </div>
-                  <BreakReminderSystem 
-                    intervalMinutes={getBreakInterval(selectedPlan.grade_level)}
-                    reminderText={`Time for a brain break! Perfect for ${selectedPlan.grade_level} attention spans.`}
-                  />
+                </div>
+              )}
+              
+              {activeDetailTab === 'original' && (
+                <div className="p-6">
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="p-6 border-b border-gray-200">
+                      <h3 className="font-semibold text-gray-900 flex items-center">
+                        <BookOpen className="w-5 h-5 mr-2 text-gray-600" />
+                        Original Lesson Plan
+                      </h3>
+                    </div>
+                    <div className="p-6">
+                      <div className="prose prose-sm max-w-none text-gray-700">
+                        <div className="whitespace-pre-line">{selectedPlan.original_content}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {activeDetailTab === 'adapted' && (
+                <div className="p-6">
+                  {selectedPlan.adhd_adapted_content ? (
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200 shadow-sm">
+                      <div className="p-6 border-b border-green-200">
+                        <h3 className="font-semibold text-gray-900 flex items-center">
+                          <Brain className="w-5 h-5 mr-2 text-green-600" />
+                          ADHD-Friendly Adaptations
+                        </h3>
+                      </div>
+                      <div className="p-6">
+                        <div 
+                          className="prose prose-sm max-w-none text-gray-700"
+                          dangerouslySetInnerHTML={{ 
+                            __html: selectedPlan.adhd_adapted_content.replace(/\n/g, '<br>') 
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Clock className="w-10 h-10 text-white" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">Adaptations Processing</h3>
+                      <p className="text-gray-600 max-w-md mx-auto">
+                        AI is still working on creating ADHD-friendly adaptations for this lesson.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {activeDetailTab === 'visual-aids' && (
+                <div className="p-6">
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-gray-900">Visual Aids for this Lesson</h3>
+                      {loadingVisualizers && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
+                          Loading visuals...
+                        </div>
+                      )}
+                    </div>
+                    
+                    {visualizers.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {visualizers.map((visualizer) => (
+                          <div key={visualizer.id} className="group">
+                            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+                              <div className="aspect-video bg-gradient-to-br from-purple-100 to-pink-100 relative">
+                                <img 
+                                  src={visualizer.image_url} 
+                                  alt={visualizer.description}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OWFhMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBhdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPg=='
+                                  }}
+                                />
+                              </div>
+                              <div className="p-4">
+                                <h4 className="font-medium text-gray-900 mb-1 capitalize">{visualizer.concept}</h4>
+                                <p className="text-sm text-gray-600">{visualizer.description}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
+                        <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                          <Image className="w-10 h-10 text-white" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3">No Visual Aids Yet</h3>
+                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                          Generate AI-powered visual aids to help explain complex concepts in this lesson.
+                        </p>
+                        <Button 
+                          onClick={generateVisuals}
+                          disabled={generatingVisual}
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          <Palette className="w-4 h-4 mr-2" />
+                          Generate Visual Aids
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {activeDetailTab === 'coaching' && (
+                <div className="p-6">
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+                    <div className="p-6 border-b border-gray-200">
+                      <h3 className="font-semibold text-gray-900 flex items-center">
+                        <Clock className="w-5 h-5 mr-2 text-green-600" />
+                        Live Coaching Session
+                      </h3>
+                    </div>
+                    <div className="p-6">
+                      {showCoaching ? (
+                        <div className="space-y-4">
+                          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-medium text-green-900">Coaching Active</h4>
+                              <Button 
+                                variant="secondary" 
+                                size="sm"
+                                onClick={() => setShowCoaching(false)}
+                              >
+                                Stop Coaching
+                              </Button>
+                            </div>
+                            <BreakReminderSystem 
+                              intervalMinutes={getBreakInterval(selectedPlan.grade_level)}
+                              reminderText={`Time for a brain break! Perfect for ${selectedPlan.grade_level} attention spans.`}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Play className="w-8 h-8 text-white" />
+                          </div>
+                          <h4 className="text-lg font-semibold text-gray-900 mb-2">Start Live Coaching</h4>
+                          <p className="text-gray-600 mb-6">
+                            Get real-time break reminders optimized for {selectedPlan.grade_level} attention spans.
+                          </p>
+                          <Button onClick={startLiveCoaching}>
+                            <Play className="w-4 h-4 mr-2" />
+                            Begin Coaching Session
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
+          </>
         ) : (
-          <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-            <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 mb-2">Select a Lesson Plan</h4>
-            <p className="text-gray-500">
-              Click on a lesson plan from the list to view its details and ADHD adaptations.
-            </p>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <BookOpen className="w-12 h-12 text-indigo-500" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-3">Select a Lesson Plan</h3>
+              <p className="text-lg text-gray-600 max-w-md mx-auto">
+                Choose a lesson from the sidebar to view its ADHD adaptations, visual aids, and coaching tools.
+              </p>
+            </div>
           </div>
         )}
       </div>
