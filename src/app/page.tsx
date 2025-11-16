@@ -5,11 +5,14 @@ import { User } from '@supabase/supabase-js'
 import { createClientSupabase } from '@/lib/supabase'
 import AuthForm from '@/components/auth/AuthForm'
 import Dashboard from '@/components/Dashboard'
-import { Brain, BookOpen, Users, Timer, Sparkles, CheckCircle, Star } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
+import { Brain, BookOpen, Users, Timer, Sparkles, CheckCircle, Star, ArrowRight, Play, FileText } from 'lucide-react'
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const supabase = createClientSupabase()
 
   useEffect(() => {
@@ -107,9 +110,98 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Auth Form Container */}
-            <div className="max-w-md mx-auto">
-              <AuthForm />
+            {/* Call to Action */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                onClick={() => setShowAuthModal(true)}
+                variant="gradient" 
+                size="xl"
+                className="group"
+              >
+                <span>Get Started Free</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              
+              <Button 
+                variant="secondary" 
+                size="xl"
+                className="group"
+                onClick={() => {
+                  // Scroll to features section
+                  document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
+                <Play className="w-5 h-5 mr-2" />
+                <span>See Demo</span>
+              </Button>
+            </div>
+            
+            <p className="text-sm text-gray-500 mt-4">
+              ✨ No credit card required • 5-minute setup • Start teaching better today
+            </p>
+          </div>
+        </div>
+
+        {/* Demo Section */}
+        <div id="demo" className="bg-gradient-to-br from-indigo-50 to-purple-50 py-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              See FocusFlow in Action
+            </h2>
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+              Watch how a simple lesson plan transforms into an ADHD-friendly learning experience
+            </p>
+            
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="bg-white rounded-2xl p-8 shadow-xl border border-indigo-100">
+                <div className="text-left">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2 text-gray-600" />
+                    Original Lesson Plan
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 space-y-2">
+                    <p><strong>Topic:</strong> Introduction to Fractions</p>
+                    <p><strong>Duration:</strong> 45 minutes</p>
+                    <p><strong>Activity:</strong> Read chapter, solve 20 problems, discussion</p>
+                    <p className="text-gray-500">Traditional one-size-fits-all approach...</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 shadow-xl text-white">
+                <div className="text-left">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    ADHD-Adapted Version
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p><strong>Chunked into 3 segments:</strong> 12-15 min each</p>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p><strong>Visual aids:</strong> Fraction pizza diagrams</p>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p><strong>Movement breaks:</strong> Every 12 minutes</p>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p><strong>Engagement hooks:</strong> "Math mystery" storyline</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-12">
+              <Button 
+                onClick={() => setShowAuthModal(true)}
+                variant="gradient" 
+                size="lg"
+                className="group"
+              >
+                <span>Try This Transformation</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </div>
           </div>
         </div>
@@ -311,6 +403,15 @@ export default function Home() {
             </div>
           </div>
         </footer>
+        
+        {/* Auth Modal */}
+        <Modal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          size="md"
+        >
+          <AuthForm onSuccess={() => setShowAuthModal(false)} />
+        </Modal>
       </div>
     )
   }

@@ -5,7 +5,11 @@ import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Eye, EyeOff, Mail, Lock, User, GraduationCap, Heart, Loader, CheckCircle, AlertCircle } from 'lucide-react'
 
-export default function AuthForm() {
+interface AuthFormProps {
+  onSuccess?: () => void
+}
+
+export default function AuthForm({ onSuccess }: AuthFormProps = {}) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -76,6 +80,7 @@ export default function AuthForm() {
         
         if (data.user) {
           setMessage('Signed in successfully!')
+          onSuccess?.()
         }
       }
     } catch (error: any) {
