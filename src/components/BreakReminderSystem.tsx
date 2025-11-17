@@ -19,8 +19,8 @@ export default function BreakReminderSystem({
   const [isRunning, setIsRunning] = useState(false)
   const [isBreakTime, setIsBreakTime] = useState(false)
   const [breakDuration, setBreakDuration] = useState(120) // 2 minutes default break
-  const intervalRef = useRef<NodeJS.Timeout>()
-  const audioRef = useRef<HTMLAudioElement>()
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     // Create audio context for break notifications

@@ -4,8 +4,7 @@ import { useState } from 'react'
 import { createClientSupabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/Button'
 import { Upload, FileText, Loader, CheckCircle, AlertCircle, X, Plus, Sparkles, Brain, Clock, Lightbulb } from 'lucide-react'
-import * as pdlParser from 'pdf-parse'
-import mammoth from 'mammoth'
+// File processing moved to API route for serverless compatibility
 
 interface LessonPlanUploadProps {
   userId?: string
@@ -46,18 +45,30 @@ export default function LessonPlanUpload({ userId }: LessonPlanUploadProps) {
     try {
       let extractedText = ''
 
-      if (selectedFile.type === 'application/pdf') {
-        const arrayBuffer = await selectedFile.arrayBuffer()
-        const pdfData = await pdlParser(Buffer.from(arrayBuffer))
-        extractedText = pdfData.text
-      } else if (selectedFile.type.includes('word') || selectedFile.name.endsWith('.docx')) {
-        const arrayBuffer = await selectedFile.arrayBuffer()
-        const result = await mammoth.extractRawText({ arrayBuffer })
-        extractedText = result.value
-      } else if (selectedFile.type === 'text/plain') {
+      if (selectedFile.type === 'text/plain') {
+        // Handle text files directly on the client
         extractedText = await selectedFile.text()
+      } else if (selectedFile.type === 'application/pdf') {
+        // PDF processing temporarily disabled for deployment
+        throw new Error('PDF processing temporarily disabled for deployment compatibility. Please use DOCX or TXT files.')
+      } else if (selectedFile.type.includes('word') || selectedFile.name.endsWith('.docx')) {
+        // Send binary files to server for processing
+        const formData = new FormData()
+        formData.append('file', selectedFile)
+
+        const response = await fetch('/api/process-file', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to process file')
+        }
+
+        const result = await response.json()
+        extractedText = result.text
       } else {
-        throw new Error('Unsupported file type. Please upload PDF, DOCX, or TXT files.')
+        throw new Error('Unsupported file type. Please upload DOCX or TXT files. (PDF support temporarily disabled)')
       }
 
       setContent(extractedText)

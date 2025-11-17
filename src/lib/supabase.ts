@@ -111,6 +111,7 @@ export type Database = {
           concept: string
           image_url: string
           description: string
+          grade_level: string | null
           created_at: string
         }
         Insert: {
@@ -119,6 +120,7 @@ export type Database = {
           concept: string
           image_url: string
           description: string
+          grade_level?: string | null
           created_at?: string
         }
         Update: {
@@ -127,6 +129,7 @@ export type Database = {
           concept?: string
           image_url?: string
           description?: string
+          grade_level?: string | null
           created_at?: string
         }
       }

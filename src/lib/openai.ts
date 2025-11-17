@@ -87,7 +87,7 @@ export async function generateVisualizer(concept: string, gradeLevel: string) {
       n: 1,
     })
 
-    return response.data[0]?.url || ''
+    return response.data?.[0]?.url || ''
   } catch (error) {
     console.error('Error generating visualizer:', error)
     throw new Error('Failed to generate visualizer')

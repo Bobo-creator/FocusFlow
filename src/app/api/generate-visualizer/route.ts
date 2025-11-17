@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Saving visualizer to database...')
     // Save visualizer to database
-    const { data, error } = await supabase
-      .from('visualizers')
+    const { data, error } = await (supabase
+      .from('visualizers') as any)
       .insert({
         lesson_plan_id: lessonPlanId,
         concept,

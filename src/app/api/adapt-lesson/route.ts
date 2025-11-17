@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
     const coachingTips = await generateCoachingTips(content, subject, gradeLevel)
 
     // Update lesson plan with adapted content
-    const { error: updateError } = await supabase
-      .from('lesson_plans')
+    const { error: updateError } = await (supabase
+      .from('lesson_plans') as any)
       .update({
         adhd_adapted_content: adaptedContent,
         updated_at: new Date().toISOString(),
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       const tips = parseCoachingTips(coachingTips)
       
       for (const tip of tips) {
-        await supabase.from('coaching_tips').insert({
+        await (supabase.from('coaching_tips') as any).insert({
           lesson_plan_id: lessonPlanId,
           tip_text: tip.suggestion,
           tip_type: tip.type,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Generate break reminders based on grade level
     const breakInterval = getBreakInterval(gradeLevel)
-    await supabase.from('break_reminders').insert({
+    await (supabase.from('break_reminders') as any).insert({
       lesson_plan_id: lessonPlanId,
       interval_minutes: breakInterval,
       reminder_text: `Time for a brain break! Try a 2-minute movement activity.`,
@@ -73,7 +73,7 @@ function parseCoachingTips(tipsText: string) {
   const tips = []
   const lines = tipsText.split('\n').filter(line => line.trim())
   
-  let currentTip = { type: 'engagement' as const, suggestion: '' }
+  let currentTip: { type: 'engagement' | 'break' | 'visual' | 'movement' | 'attention', suggestion: string } = { type: 'engagement', suggestion: '' }
   
   for (const line of lines) {
     if (line.includes('**Tip Type**:')) {
